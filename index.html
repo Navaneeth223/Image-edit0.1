@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curved Image Editor</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: #f0f4f8;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      margin-top: 1rem;
+      border-radius: 12px;
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+      align-items: center;
+    }
+    input[type="file"] {
+      padding: 0.5rem;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      background: #0066ff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0044cc;
+    }
+    .steps {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #333;
+      text-align: center;
+    }
+    .steps li {
+      margin-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Curved Image Editor</h1>
+  <ul class="steps">
+    <li>1. Upload an image</li>
+    <li>2. Apply a circular crop</li>
+    <li>3. Download the curved image</li>
+  </ul>
+
+  <input type="file" id="upload" accept="image/*">
+  <canvas id="canvas" width="400" height="400"></canvas>
+
+  <div class="controls">
+    <button onclick="applyCircleClip()">Apply Circular Crop</button>
+    <button onclick="downloadImage()">Download Image</button>
+  </div>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let img = new Image();
+
+    upload.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+          img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+          img.src = evt.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function applyCircleClip() {
+      if (!img.src) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    }
+
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = 'curved-image.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  </script>
+</body>
+</html>
